@@ -20,6 +20,9 @@ jobs:
         env:
           RUN_PASS: ${{ secrets.GH_RUNNER_PASSWORD }}
         run: |
+          # تجاوز قيود Execution Policy
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+
           $user = 'Ghassan'
           $exists = Get-LocalUser -Name $user -ErrorAction SilentlyContinue
           if (-not $exists) {
@@ -32,6 +35,7 @@ jobs:
       - name: Install Chocolatey (if missing)
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
             Set-ExecutionPolicy Bypass -Scope Process -Force
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
@@ -41,6 +45,7 @@ jobs:
       - name: Install Tools (Node.js, Python, .NET, FFmpeg)
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           $pkgs = @('nodejs-lts','python','dotnet','ffmpeg')
           foreach ($p in $pkgs) {
             if (-not (choco list --local-only | Select-String $p)) { choco install $p -y --no-progress }
@@ -50,6 +55,7 @@ jobs:
       - name: Detect Projects & Install Dependencies
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           if (Test-Path "package.json") {
               Write-Host "Node.js project detected."
               npm install
@@ -67,6 +73,7 @@ jobs:
       - name: Run Tests
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           if (Test-Path "package.json") { npm test || exit 1 }
           if (Test-Path "requirements.txt") { python -m unittest discover || exit 1 }
           if (Get-ChildItem *.csproj -ErrorAction SilentlyContinue) { dotnet test || exit 1 }
@@ -74,17 +81,20 @@ jobs:
       - name: Build / Package
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           if (Test-Path "package.json") { npm run build || exit 1 }
           if (Get-ChildItem *.csproj -ErrorAction SilentlyContinue) { dotnet build || exit 1 }
 
       - name: Deploy Automatically
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           Write-Host "Deploy commands go here. ضع أي أوامر نشر تلقائي لكل مشروع."
 
       - name: Show Runner Info
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           Write-Host "Runner Computer: $env:COMPUTERNAME"
           Write-Host "Runner User: Ghassan"
           Write-Host "Projects detected automatically, Build/Test/Deploy completed."
@@ -93,6 +103,7 @@ jobs:
         if: ${{ github.event.inputs.keep_live == 'true' || github.event_name == 'workflow_dispatch' }}
         shell: powershell
         run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           Write-Host "`n=== ULTIMATE LIVE MODE ACTIVE ==="
           while ($true) {
               Write-Host "[$(Get-Date)] Runner Ghassan active and ready for any new Workflow"
