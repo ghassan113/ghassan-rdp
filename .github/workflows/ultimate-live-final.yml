@@ -15,29 +15,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Ghassan Runner User & Admin
+      - name: Set Working Directory to Runner Path
         shell: powershell
-        env:
-          RUN_PASS: ${{ secrets.GH_RUNNER_PASSWORD }}
         run: |
-          # تجاوز قيود Execution Policy
-          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-
-          $user = 'Ghassan'
-          $exists = Get-LocalUser -Name $user -ErrorAction SilentlyContinue
-          if (-not $exists) {
-              $secure = ConvertTo-SecureString $env:RUN_PASS -AsPlainText -Force
-              New-LocalUser -Name $user -Password $secure -FullName "Ghassan Runner" -Description "Ultimate Self-hosted runner user" -AccountNeverExpires
-              Add-LocalGroupMember -Group "Administrators" -Member $user
-              Write-Host "User $user created and added to Administrators."
-          } else { Write-Host "User $user already exists." }
+          Set-Location "C:\actions-runner\_work"
+          Write-Host "Current path: $(Get-Location)"
 
       - name: Install Chocolatey (if missing)
         shell: powershell
         run: |
           Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
           if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
-            Set-ExecutionPolicy Bypass -Scope Process -Force
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
             Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
           }
